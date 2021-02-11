@@ -1,0 +1,17 @@
+name: GameManager
+version: ${project.version}
+main: org.shingetsu.gamemanager.GameManager
+api-version: 1.16
+prefix: GM
+authors: [ xrexy, Spitzy ]
+
+commands:
+  managemaps:
+    aliases: [ maps ]
+    description: /managemaps
+    usage: /<command>
+
+permissions:
+  gamemanager.use:
+    default: op
+    description: /managemaps

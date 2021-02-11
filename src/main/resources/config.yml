@@ -1,0 +1,6 @@
+debug: true
+prefix: "&f[&9&lMAPS&f] "
+
+messages:
+  no-permission: "%prefix% &cYou do not have enough permissions to use this command"
+  invalid-args: "%prefix% &cInvalid arguments, please try again"
