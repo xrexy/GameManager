@@ -23,17 +23,27 @@ public class Utils {
     }
 
     public static String process(String toProcess) {
-        return toProcess.replace("%prefix%", colorize(getString("prefix")));
+        return toProcess.replace("%prefix%", getString("prefix"));
+    }
+
+    public static void sendMultilineMessage(Player p, String path) {
+        StringBuilder message = new StringBuilder();
+        for (String s : config.getStringList(path))
+            message.append(colorize(process(s)));
+        p.sendMessage(message.toString());
     }
 
     public static void sendMessage(Player p, String path) {
-        p.sendMessage(colorize(getString(path)));
+        p.sendMessage(colorize(process(getString(path))));
+    }
+
+    public static void sendRawMessage(Player p, String message) {
+        p.sendMessage(colorize(message));
     }
 
     public static String getString(String path) {
         return config.getString(path);
     }
-
 
     public static String colorize(String input) {
         return ChatColor.translateAlternateColorCodes('&', input);

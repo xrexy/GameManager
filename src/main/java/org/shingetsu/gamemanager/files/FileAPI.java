@@ -1,13 +1,27 @@
 package org.shingetsu.gamemanager.files;
 
-import org.shingetsu.gamemanager.GameManager;
 import org.shingetsu.gamemanager.files.files.DataFile;
-import org.shingetsu.gamemanager.maps.MapManager;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.Scanner;
 
 public class FileAPI {
     private final HashMap<String, AbstractYamlFile> files = new HashMap<>();
+
+    public String readFile(File file) throws FileNotFoundException {
+        StringBuilder fileContents = new StringBuilder((int) file.length());
+
+        if(!file.exists()) return "";
+
+        try (Scanner scanner = new Scanner(file)) {
+            while (scanner.hasNextLine())
+                fileContents.append(scanner.nextLine()).append(System.lineSeparator());
+            scanner.close();
+            return fileContents.toString();
+        }
+    }
 
     /**
      * Adds file to local library
@@ -35,7 +49,6 @@ public class FileAPI {
      */
     public void loadFiles() {
         saveFile(new DataFile());
-        saveFile(GameManager.getMapManager());
     }
 
 

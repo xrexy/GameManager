@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONObject;
 import org.shingetsu.gamemanager.GameManager;
+import org.shingetsu.gamemanager.utils.LocationHandler;
 import org.shingetsu.gamemanager.utils.Utils;
 
 import java.io.File;
@@ -18,38 +19,44 @@ public class Map {
     private String name;
     private final ArrayList<Player> players;
 
-    public Map(String name, Location location) {
+    protected Map(String name, Location location) {
         this.location = location;
         this.name = name;
         this.players = new ArrayList<>();
-        createJson();
     }
 
-    public Map(Location location, String name, ArrayList<Player> players) {
-        this.location = location;
-        this.name = name;
-        this.players = players;
-        createJson();
-    }
-
-    private void createJson() {
+    /**
+     * Creates a new JSON File with map information. TODO More fields?
+     *
+     * @return True - if a new file was created, False - if file already exists, or an exception appeared
+     */
+    public boolean createJson() {
         String fileName = name.replace(" ", "_");
         File file = new File(GameManager.getInstance().getDataFolder(), "/maps/" + fileName + ".json");
-        if (file.exists()) return;
+
+        Utils.warn("Creating file " + name + "...");
+
+        if (file.exists()) {
+            Utils.warn("Creation of file " + name + " failed! File with this name already exists!");
+            return false;
+        }
         file.getParentFile().mkdirs();
 
-        Bukkit.getLogger().warning("Creating file... path: " + file.getPath());
         try {
             JSONObject json = new JSONObject();
-            json.put("location", location);
+            json.put("location", LocationHandler.getStringFromLocation(location));
             json.put("name", name);
 
             FileWriter fileWriter = new FileWriter(file);
             fileWriter.write(json.toJSONString());
             fileWriter.close();
+
+            Utils.warn("Successfully created file " + name + "!");
+            return true;
         } catch (IOException exception) {
             Utils.debug(exception, Level.SEVERE, MapManager.PREFIX + "Couldn't create file for map: " + name);
         }
+        return false;
     }
 
     public Location getLocation() {

@@ -1,66 +1,67 @@
 package org.shingetsu.gamemanager.maps;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.shingetsu.gamemanager.files.AbstractYamlFile;
+import org.shingetsu.gamemanager.GameManager;
+import org.shingetsu.gamemanager.exceptions.MapDirectoryException;
+import org.shingetsu.gamemanager.utils.LocationHandler;
 import org.shingetsu.gamemanager.utils.Utils;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
-public class MapManager extends AbstractYamlFile {
+public class MapManager {
     public static String PREFIX = "[MAPS] ";
-    private final HashMap<Integer, Map> maps = new HashMap<>();
+    private Map currentMap = null;
+    private final GameManager gameManager = GameManager.getInstance();
 
     public Map loadMap(File file) {
-        AtomicReference<Location> location = null;
-        AtomicReference<String> name = null;
-        AtomicReference<ArrayList<Player>> players = null;
+        JSONParser parser = new JSONParser();
+        try {
+            FileReader fileReader = new FileReader(file);
+            Object obj = parser.parse(fileReader);
 
-        try (FileReader fileReader = new FileReader(file)) {
-            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) obj;
 
-            JSONArray jsonArray = (JSONArray) jsonParser.parse(fileReader);
-            Bukkit.getLogger().warning(jsonArray.toJSONString());
-
-            //Iterate over employee array
-            jsonArray.forEach(_obj_ -> {
-                JSONObject obj = (JSONObject) _obj_;
-                players.set((ArrayList<Player>) obj.get("players"));
-                location.set((Location) obj.get("location"));
-                name.set((String) obj.get("name"));
-            });
-        } catch (IOException | ParseException exception) {
-            Utils.debug(exception, Level.SEVERE, MapManager.PREFIX + "Error while parsing file " + file.getName());
+            fileReader.close();
+            return new Map((String) jsonObject.get("name"), LocationHandler.getLocationFromString((String) jsonObject.get("location")));
+        } catch (Exception exception) {
+            Utils.debug(exception, Level.SEVERE, "Couldn't load map from file " + file.getName());
         }
-        return new Map(location.get(), name.get(), players.get());
+        return null;
     }
 
-    public void newMap(String name, Location location) {
-        maps.put(maps.size() + 1, new Map(name, location));
+    public Map getRandomMap() {
+        try {
+            File dir = new File(gameManager.getDataFolder(), "/maps/");
+
+            if (!dir.exists()) throw new MapDirectoryException();
+            if (!dir.isDirectory()) throw new MapDirectoryException();
+
+            File[] directoryListing = dir.listFiles();
+            if (directoryListing == null || directoryListing.length == 0) {
+                Utils.warn("Maps folder is either non existent or is empty");
+                throw new MapDirectoryException();
+            }
+
+            return loadMap(directoryListing[ThreadLocalRandom.current().nextInt(directoryListing.length - 1)]);
+        } catch (Exception exception) {
+            Utils.debug(exception, Level.SEVERE, "Something went wrong while listing files from directory!");
+        }
+        return null;
     }
 
-    public HashMap<Integer, Map> getMaps() {
-        return maps;
+    public void changeCurrentMap() {
+        // TODO D:
+        this.currentMap = getRandomMap();
     }
 
-    @Override
-    public String getFileName() {
-        return "maps/maps-list.yml";
-    }
+    public boolean newMap(String name, Location location) {
+        Map newMap = new Map(name, location);
 
-    @Override
-    public boolean isResource() {
-        return false;
+        return newMap.createJson();
     }
 }

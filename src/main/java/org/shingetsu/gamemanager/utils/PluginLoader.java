@@ -4,7 +4,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.shingetsu.gamemanager.GameManager;
 import org.shingetsu.gamemanager.commands.CommandManager;
+import org.shingetsu.gamemanager.commands.subcommands.ArgList;
 import org.shingetsu.gamemanager.commands.subcommands.ArgNew;
+import org.shingetsu.gamemanager.commands.ManagemapsCmd;
 import org.shingetsu.gamemanager.files.FileAPI;
 import org.shingetsu.gamemanager.maps.MapManager;
 
@@ -12,7 +14,6 @@ public class PluginLoader {
     private final GameManager gameManager = GameManager.getInstance();
     private final FileAPI fileAPI = new FileAPI();
     private final MapManager mapManager = GameManager.getMapManager();
-    private final String MAIN_COMMAND = "managemaps";
 
     /**
      * <b>onEnable only</b>
@@ -37,19 +38,26 @@ public class PluginLoader {
      * Loads all registered commands (From CommandManager)
      */
     void loadCommands() {
-        final PluginCommand mainPluginCommand = gameManager.getCommand(MAIN_COMMAND);
-        final CommandManager commandManager = new CommandManager(MAIN_COMMAND);
+        // /managemaps
+        final ManagemapsCmd managemaps = new ManagemapsCmd();
+        final PluginCommand manageMapsCommand = gameManager.getCommand(managemaps.getCommand());
+        final CommandManager manageMapsCommandManager = new CommandManager(managemaps.getCommand());
 
-        if (mainPluginCommand == null) {
-            Bukkit.getLogger().severe(String.format("[%s] - Disabled, couldn't load main command!", gameManager.getDescription().getName()));
+        if (manageMapsCommand == null) {
+            Bukkit.getLogger().severe(String.format("[%s] - Disabled, couldn't load managemaps command!", gameManager.getDescription().getName()));
             gameManager.getServer().getPluginManager().disablePlugin(gameManager);
             return;
         }
 
-        mainPluginCommand.setExecutor(commandManager);
+        manageMapsCommand.setExecutor(manageMapsCommandManager);
 //        mainPluginCommand.setTabCompleter(new STTabCompleter());
 
+        manageMapsCommandManager.register(managemaps.getCommand(), managemaps);
+
         ArgNew aNew = new ArgNew();
-        commandManager.register(aNew.getCommand(), aNew);
+        manageMapsCommandManager.register(aNew.getCommand(), aNew);
+
+        ArgList aList = new ArgList();
+        manageMapsCommandManager.register(aList.getCommand(), aList);
     }
 }

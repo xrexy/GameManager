@@ -2,5 +2,17 @@ debug: true
 prefix: "&f[&9&lMAPS&f] "
 
 messages:
+  help:
+    - "line 1"
+    - "line 2"
+
   no-permission: "%prefix% &cYou do not have enough permissions to use this command"
   invalid-args: "%prefix% &cInvalid arguments, please try again"
+  missing-args: "%prefix% &cThere are too little arguments, please check the format again"
+  new-map: "%prefix% &aSuccessfully created a new map! &e[ %map_name% ]"
+  new-map-exists: "%prefix% &cMap &f%map_name% &calready exists!"
+
+  list-fail: "%prefix% &cSomething went wrong while trying to list files! Check console for more information"
+  list-success: "%prefix% &aListing information for &e%count% &afiles..."
+  list-entry: "  &f> &c%map%"
+  list-file-hover: "&aClick me to teleport to &e%map%!"
